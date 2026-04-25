@@ -1,0 +1,4 @@
+instance_public_dns = "ec2-3-235-45-175.compute-1.amazonaws.com"
+instance_public_ip = "3.235.45.175"
+ssh_command = "ssh -i ~/project3-key.pem ubuntu@3.235.45.175"
+
