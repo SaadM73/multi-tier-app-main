@@ -1,0 +1,1177 @@
+Total pages: 31
+
+=== Page 1 ===
+
+Project 3
+Automated Multi-Tier Application
+Deployment
+Complete Step-by-Step Walkthrough
+Technology Stack
+Docker Terraform Ansible
+Kubernetes GitHub Actions ArgoCD
+AWS EC2 VPC microk8s
+Deployment Pipeline:
+Phase 1: Local Setup — Tools, GitHub repo, sample app
+Phase 2: Dockerization — Dockerfiles for frontend & backend
+Phase 3: Terraform — Provision EC2, VPC, Security Groups on AWS
+Phase 4: Ansible — Configure EC2, install microk8s
+Phase 5: Kubernetes Manifests — Deployments & Services
+Phase 6: GitHub Actions — CI pipeline (build & push images)
+Phase 7: ArgoCD — CD synchronization to the cluster
+Phase 8: Verify & Test the full pipeline end-to-end
+What You Need Before Starting:
+ AWS Account with Console access and IAM user with programmatic access
+ GitHub Account (free): https://github.com
+ DockerHub Account (free): https://hub.docker.com
+ Local machine running Linux, macOS, or Windows with WSL2
+ Tools to install locally: terraform, ansible, git, docker, aws cli
+ Estimated time: 3–5 hours
+Sample App Used: A 2-service microservices app (React frontend + Node.js backend).
+You may substitute your own codebase.
+
+
+=== Page 2 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Contents
+1 Install Required Tools on Your Local Machine 2
+1.1 Install Git . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+1.2 Install Docker . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+1.3 Install Terraform . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+1.4 Install Ansible . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+1.5 Install AWS CLI . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+1.6 Create EC2 Key Pair . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2 Create the GitHub Repository 4
+2.1 Create a New Repo on GitHub . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.2 Clone the Repository Locally . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.3 Create the Folder Structure . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.4 Create the Sample Application Code . . . . . . . . . . . . . . . . . . . . . . . 5
+3 Write the Dockerfiles 7
+3.1 Backend Dockerfile . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+3.2 Frontend Dockerfile . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+3.3 Build and Test Docker Images Locally . . . . . . . . . . . . . . . . . . . . . . 8
+4 Write Terraform Configuration Files 9
+4.1 Create terraform/variables.tf . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+4.2 Create terraform/main.tf . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+4.3 Create terraform/outputs.tf . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+4.4 Run Terraform to Provision the Infrastructure . . . . . . . . . . . . . . . . . . 13
+5 Write Ansible Playbooks 14
+5.1 Create ansible/inventory.ini . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+5.2 Create ansible/playbook.yml . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+5.3 Run the Ansible Playbook . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+6 Write Kubernetes Manifests for Each Service 18
+6.1 Backend Kubernetes Manifests . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+6.2 Frontend Kubernetes Manifests . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+7 Set Up DockerHub and GitHub Secrets 20
+7.1 Add Secrets to GitHub Repository . . . . . . . . . . . . . . . . . . . . . . . . 20
+8 Write the GitHub Actions CI Workflow 21
+8.1 Create the Workflow File . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+8.2 Push All Files to GitHub and Trigger the Pipeline . . . . . . . . . . . . . . . . 22
+9 Configure ArgoCD for Continuous Deployment 23
+9.1 Get the ArgoCD Admin Password . . . . . . . . . . . . . . . . . . . . . . . . . 23
+9.2 Patch ArgoCD to Use NodePort (If Needed) . . . . . . . . . . . . . . . . . . . 24
+9.3 Open ArgoCD in Your Browser . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+9.4 Connect Your GitHub Repository to ArgoCD . . . . . . . . . . . . . . . . . . 24
+9.5 Create the ArgoCD Application . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+10 Test and Verify Everything is Working 25
+1
+
+
+=== Page 3 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+10.1 Verify Kubernetes Pods Are Running . . . . . . . . . . . . . . . . . . . . . . . 26
+10.2 Access the Application . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+10.3 Test the Full CI/CD Pipeline End-to-End . . . . . . . . . . . . . . . . . . . . 26
+11 Create the README.md Documentation 27
+12 Cleanup (After Grading) 28
+13 Complete File Reference 29
+13.1 Values Tracker . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+2
+
+
+=== Page 4 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+PHASE 1: Local Setup — Tools, Repository and Sample App
+1 Install Required Tools on Your Local Machine
+NOTE
+All commands in Phase 1 are run in your local terminal (not on EC2).
+1.1 Install Git
+Step 1.1.1: Check if Git is already installed:
+git --version
+Step 1.1.2: If not installed, install it:
+# Ubuntu/Debian:
+sudo apt-get update && sudo apt-get install git -y
+# macOS:
+brew install git
+Step 1.1.3: Configure Git with your identity:
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+1.2 Install Docker
+Step 1.2.1: Install Docker Engine on your local machine:
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install docker.io -y
+sudo usermod -aG docker $ USER
+newgrp docker
+Step 1.2.2: Verify Docker is running:
+docker --version
+3
+
+
+=== Page 5 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+1.3 Install Terraform
+Step 1.3.1: Install Terraform (version 1.6+):
+# Ubuntu/Debian:
+sudo apt-get update && sudo apt-get install -y gnupg
+software-properties-common
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o
+/usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg]
+https://apt.releases.hashicorp.com $ (lsb release -cs) main" | sudo tee
+/etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt-get install terraform -y
+Step 1.3.2: Verify:
+terraform -version
+1.4 Install Ansible
+Step 1.4.1: Install Ansible:
+sudo apt update
+sudo apt install -y ansible
+ansible --version
+1.5 Install AWS CLI
+Step 1.5.1: Install and configure AWS CLI:
+sudo apt-get install awscli -y
+aws --version
+Step 1.5.2: Configure AWS credentials. In the AWS Console: go to IAM → Users →
+your user → Security credentials → [Click: Create access key] → [Select: CLI]
+use case. Copy the Access Key ID and Secret. Then run:
+aws configure
+Enter: Access Key ID, Secret Access Key, Region (e.g. us-east-1), Output format: json.
+4
+
+
+=== Page 6 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+1.6 Create EC2 Key Pair
+Step 1.6.1: In the AWS Console, search for [Type: EC2] and open EC2.
+Step 1.6.2: In the left sidebar, under Network & Security, [Click: Key Pairs] .
+Step 1.6.3: Click [Click: Create key pair] . Name: [Type: project3-key]. Type:
+RSA. Format: [Select: .pem] . Click [Click: Create key pair] . Save the downloaded
+project3-key.pem file to your home directory.
+Step 1.6.4: Set permissions on the key file:
+chmod 400 ~/project3-key.pem
+2 Create the GitHub Repository
+2.1 Create a New Repo on GitHub
+Step 2.1.1: Open a browser and go to https://github.com. Log in.
+Step 2.1.2: Click the + icon (top-right) then [Click: New repository] .
+Step 2.1.3: Fill in:
+ Repository name: [Type: multi-tier-app]
+ Description: [Type: Automated Multi-Tier Deployment Project ]
+ Visibility: [Select: Public] (required for free ArgoCD access) or Private
+ Check Add a README file
+Click [Click: Create repository] .
+2.2 Clone the Repository Locally
+Step 2.2.1: On the GitHub repo page, click the green [Click: Code] button. Copy the
+HTTPS URL.
+Step 2.2.2: In your local terminal:
+git clone https://github.com/<YOUR-USERNAME>/multi-tier-app.git
+cd multi-tier-app
+2.3 Create the Folder Structure
+Step 2.3.1: Create the full project folder structure:
+mkdir -p frontend/src backend terraform ansible k8s .github/workflows
+5
+
+
+=== Page 7 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 2.3.2: Your folder structure should look like this:
+multi-tier-app/
+|-- frontend/
+| |-- src/
+| |-- Dockerfile
+|-- backend/
+| |-- Dockerfile
+| |-- server.js
+| |-- package.json
+|-- terraform/
+| |-- main.tf
+| |-- variables.tf
+| |-- outputs.tf
+|-- ansible/
+| |-- inventory.ini
+| |-- playbook.yml
+|-- k8s/
+| |-- backend-deployment.yml
+| |-- backend-service.yml
+| |-- frontend-deployment.yml
+| |-- frontend-service.yml
+|-- .github/
+| |-- workflows/
+| |-- ci.yml
+|-- README.md
+2.4 Create the Sample Application Code
+Step 2.4.1: Create the backend Node.js server. Create the file backend/server.js:
+FILE: backend/server.js
+const express = require(’express’);
+const cors = require(’cors’);
+const app = express();
+const PORT = process.env.PORT || 3001;
+app.use(cors());
+app.use(express.json());
+app.get(’/api/health’, (req, res) => {
+res.json({ status: ’OK’, message: ’Backend is running!’ });
+});
+app.get(’/api/data’, (req, res) => {
+res.json({ items: [’Item 1’, ’Item 2’, ’Item 3’] });
+6
+
+
+=== Page 8 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+});
+app.listen(PORT, () => {
+console.log(‘Backend running on port $ {PORT}‘);
+});
+Step 2.4.2: Create backend/package.json:
+FILE: backend/package.json
+{
+"name": "backend",
+"version": "1.0.0",
+"main": "server.js",
+"scripts": {
+"start": "node server.js"
+},
+"dependencies": {
+"express": "^4.18.0",
+"cors": "^2.8.5"
+}
+}
+Step 2.4.3: Create the frontend HTML file. Create frontend/src/index.html:
+FILE: frontend/src/index.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multi-Tier App</title>
+<style>
+body { font-family: Arial; text-align: center; padding: 40px; }
+.status { color: green; font-size: 1.5em; }
+</style>
+</head>
+<body>
+<h1>Multi-Tier Application</h1>
+<p class="status" id="status">Loading...</p>
+<ul id="items"></ul>
+<script>
+const API = window.BACKEND URL || ’http://localhost:3001’;
+fetch(‘$ {API}/api/health‘)
+.then(r => r.json())
+.then(d => document.getElementById(’status’).textContent = d.message);
+7
+
+
+=== Page 9 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+fetch(‘$ {API}/api/data‘)
+.then(r => r.json())
+.then(d => {
+const ul = document.getElementById(’items’);
+d.items.forEach(i => {
+const li = document.createElement(’li’);
+li.textContent = i;
+ul.appendChild(li);
+});
+});
+</script>
+</body>
+</html>
+Step 2.4.4: Create a frontend/nginx.conf file for the Nginx server:
+FILE: frontend/nginx.conf
+server {
+listen 80;
+location / {
+root /usr/share/nginx/html;
+index index.html;
+}
+}
+PHASE 2: Dockerization — Write Dockerfiles for Each Service
+3 Write the Dockerfiles
+3.1 Backend Dockerfile
+Step 3.1.1: Create the file backend/Dockerfile:
+FILE: backend/Dockerfile
+# Use official Node.js LTS image as base
+FROM node:18-alpine
+# Set working directory inside container
+WORKDIR /app
+# Copy package files first (for layer caching)
+COPY package*.json ./
+8
+
+
+=== Page 10 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+# Install dependencies
+RUN npm install --production
+# Copy the rest of the application code
+COPY . .
+# Expose the port the backend listens on
+EXPOSE 3001
+# Command to start the application
+CMD ["node", "server.js"]
+3.2 Frontend Dockerfile
+Step 3.2.1: Create the file frontend/Dockerfile:
+FILE: frontend/Dockerfile
+# Use official Nginx image as base
+FROM nginx:alpine
+# Remove default nginx content
+RUN rm -rf /usr/share/nginx/html/*
+# Copy our HTML files into nginx’s serving directory
+COPY src/ /usr/share/nginx/html/
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose port 80 (nginx default)
+EXPOSE 80
+# Nginx starts automatically --- no CMD needed
+3.3 Build and Test Docker Images Locally
+Step 3.3.1: Build the backend image locally to verify it works:
+cd backend
+docker build -t multi-tier-backend:test .
+docker run -d --name backend-test -p 3001:3001 multi-tier-backend:test
+curl http://localhost:3001/api/health
+Step 3.3.2: You should see: {"status":"OK","message":"Backend is running!" }
+9
+
+
+=== Page 11 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 3.3.3: Build the frontend image:
+cd ../frontend
+docker build -t multi-tier-frontend:test .
+docker run -d --name frontend-test -p 8080:80 multi-tier-frontend:test
+Step 3.3.4: Open browser: http://localhost:8080 — you should see the app. Then
+clean up:
+docker stop backend-test frontend-test
+docker rm backend-test frontend-test
+cd ..
+Both Docker images build and run correctly. Phase 2 complete.
+PHASE 3: Terraform — Provision EC2, VPC and Security
+Groups
+4 Write Terraform Configuration Files
+NOTE
+Terraform will create all AWS infrastructure automatically: a VPC, subnet, internet
+gateway, security group, and EC2 instance. You provision everything with one command.
+4.1 Create terraform/variables.tf
+Step 4.1.1: Create the file terraform/variables.tf:
+FILE: terraform/variables.tf
+variable "aws region" {
+description = "AWS region to deploy in"
+type = string
+default = "us-east-1"
+}
+variable "instance type" {
+description = "EC2 instance type"
+type = string
+default = "t2.medium"
+}
+variable "key name" {
+10
+
+
+=== Page 12 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+description = "EC2 key pair name"
+type = string
+default = "project3-key"
+}
+variable "ami id" {
+description = "Ubuntu 22.04 LTS AMI (us-east-1)"
+type = string
+default = "ami-0261755bbcb8c4a84"
+}
+NOTE
+The AMI ID ami-0261755bbcb8c4a84 is Ubuntu 22.04 LTS in us-east-1. If you use a
+different region, find the correct Ubuntu 22.04 AMI ID in your region: go to EC2 Console
+→ Launch Instance → search “Ubuntu 22.04” and note the AMI ID shown.
+4.2 Create terraform/main.tf
+Step 4.2.1: Create the file terraform/main.tf:
+FILE: terraform/main.tf
+terraform {
+required providers {
+aws = {
+source = "hashicorp/aws"
+version = "~> 5.0"
+}
+}
+}
+provider "aws" {
+region = var.aws region
+}
+# --- VPC ---
+resource "aws vpc" "main" {
+cidr block = "10.0.0.0/16"
+enable dns hostnames = true
+enable dns support = true
+tags = { Name = "project3-vpc" }
+}
+# --- Internet Gateway ---
+resource "aws internet gateway" "gw" {
+vpc id = aws vpc.main.id
+tags = { Name = "project3-igw" }
+11
+
+
+=== Page 13 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+}
+# --- Public Subnet ---
+resource "aws subnet" "public" {
+vpc id = aws vpc.main.id
+cidr block = "10.0.1.0/24"
+map public ip on launch = true
+availability zone = " $ {var.aws region}a"
+tags = { Name = "project3-public-subnet" }
+}
+# --- Route Table ---
+resource "aws route table" "public" {
+vpc id = aws vpc.main.id
+route {
+cidr block = "0.0.0.0/0"
+gateway id = aws internet gateway.gw.id
+}
+tags = { Name = "project3-rt" }
+}
+resource "aws route table association" "public" {
+subnet id = aws subnet.public.id
+route table id = aws route table.public.id
+}
+# --- Security Group ---
+resource "aws security group" "app sg" {
+name = "project3-sg"
+vpc id = aws vpc.main.id
+ingress {
+from port = 22; to port = 22
+protocol = "tcp"; cidr blocks = ["0.0.0.0/0"]
+description = "SSH"
+}
+ingress {
+from port = 80; to port = 80
+protocol = "tcp"; cidr blocks = ["0.0.0.0/0"]
+description = "HTTP Frontend"
+}
+ingress {
+from port = 3001; to port = 3001
+protocol = "tcp"; cidr blocks = ["0.0.0.0/0"]
+description = "Backend API"
+}
+ingress {
+from port = 30000; to port = 32767
+12
+
+
+=== Page 14 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+protocol = "tcp"; cidr blocks = ["0.0.0.0/0"]
+description = "Kubernetes NodePort range"
+}
+egress {
+from port = 0; to port = 0
+protocol = "-1"; cidr blocks = ["0.0.0.0/0"]
+}
+tags = { Name = "project3-sg" }
+}
+# --- EC2 Instance ---
+resource "aws instance" "app server" {
+ami = var.ami id
+instance type = var.instance type
+key name = var.key name
+subnet id = aws subnet.public.id
+vpc security group ids = [aws security group.app sg.id]
+associate public ip address = true
+root block device {
+volume size = 30
+volume type = "gp3"
+}
+tags = {
+Name = "project3-app-server"
+Project = "multi-tier-app"
+}
+}
+4.3 Create terraform/outputs.tf
+Step 4.3.1: Create the file terraform/outputs.tf:
+FILE: terraform/outputs.tf
+output "instance public ip" {
+description = "Public IP address of the EC2 instance"
+value = aws instance.app server.public ip
+}
+output "instance public dns" {
+description = "Public DNS of the EC2 instance"
+value = aws instance.app server.public dns
+}
+output "ssh command" {
+13
+
+
+=== Page 15 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+description = "SSH command to connect to the instance"
+value = "ssh -i ~/project3-key.pem ubuntu@ $ {aws instance.app server.public ip}"
+}
+4.4 Run Terraform to Provision the Infrastructure
+Step 4.4.1: Navigate to the terraform directory:
+cd terraform
+Step 4.4.2: Initialize Terraform (downloads AWS provider plugin):
+terraform init
+Step 4.4.3: Preview what Terraform will create:
+terraform plan
+Step 4.4.4: Review the output. You should see it will create: 1 VPC, 1 Internet Gateway,
+1 Subnet, 1 Route Table, 1 Route Table Association, 1 Security Group, 1 EC2 instance.
+When ready, apply:
+terraform apply
+Step 4.4.5: When prompted Do you want to perform these actions? type [Type:
+yes] and press Enter. Wait 1–2 minutes.
+Step 4.4.6: When complete, Terraform prints the outputs. Copy and save the
+instance public ip value. This is your EC2 IP.
+Terraform has provisioned the full AWS infrastructure. You now have an EC2 instance
+with a public IP, inside a VPC with proper security groups. Phase 3 complete.
+Step 4.4.7: Go back to project root:
+cd ..
+PHASE 4: Ansible — Configure EC2 and Install microk8s
+14
+
+
+=== Page 16 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+5 Write Ansible Playbooks
+NOTE
+Ansible connects to the EC2 instance over SSH and automatically installs and configures
+everything needed to run Kubernetes. Wait 2–3 minutes after Terraform finishes before
+running Ansible so the instance fully initializes.
+5.1 Create ansible/inventory.ini
+Step 5.1.1: Create ansible/inventory.ini. Replace <EC2 IP> with your actual EC2
+public IP from Terraform output:
+FILE: ansible/inventory.ini
+[app servers]
+<EC2 IP> ansible user=ubuntu ansible ssh private key file=~/project3-key.pem
+ansible ssh common args=’-o StrictHostKeyChecking=no’
+NOTE
+You can also get the EC2 IP anytime by runningterraform output instance public ip
+from inside the terraform/ directory.
+5.2 Create ansible/playbook.yml
+Step 5.2.1: Create ansible/playbook.yml:
+FILE: ansible/playbook.yml
+---
+- name: Configure EC2 instance and install microk8s
+hosts: app servers
+become: true
+vars:
+microk8s channel: "1.28/stable"
+tasks:
+# --- System Update ---
+- name: Update and upgrade apt packages
+apt:
+update cache: yes
+upgrade: dist
+cache valid time: 3600
+# --- Install prerequisites ---
+- name: Install required system packages
+apt:
+15
+
+
+=== Page 17 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+name:
+- apt-transport-https
+- ca-certificates
+- curl
+- gnupg
+- git
+- snapd
+state: present
+# --- Install Docker ---
+- name: Install Docker
+apt:
+name: docker.io
+state: present
+- name: Start and enable Docker
+systemd:
+name: docker
+state: started
+enabled: yes
+- name: Add ubuntu user to docker group
+user:
+name: ubuntu
+groups: docker
+append: yes
+# --- Install microk8s ---
+- name: Install microk8s via snap
+snap:
+name: microk8s
+classic: yes
+channel: " {{ microk8s channel }}"
+- name: Add ubuntu user to microk8s group
+user:
+name: ubuntu
+groups: microk8s
+append: yes
+- name: Wait for microk8s to be ready
+command: microk8s status --wait-ready
+timeout: 120
+# --- Enable microk8s addons ---
+- name: Enable DNS addon
+command: microk8s enable dns
+16
+
+
+=== Page 18 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+- name: Enable Storage addon
+command: microk8s enable storage
+- name: Enable Ingress addon
+command: microk8s enable ingress
+# --- Configure kubectl alias ---
+- name: Create kubectl config directory
+file:
+path: /home/ubuntu/.kube
+state: directory
+owner: ubuntu
+group: ubuntu
+- name: Export microk8s kubeconfig
+shell: microk8s config > /home/ubuntu/.kube/config
+args:
+creates: /home/ubuntu/.kube/config
+- name: Set kubeconfig ownership
+file:
+path: /home/ubuntu/.kube/config
+owner: ubuntu
+group: ubuntu
+mode: ’0600’
+- name: Create kubectl alias
+lineinfile:
+path: /home/ubuntu/.bashrc
+line: "alias kubectl=’microk8s kubectl’"
+state: present
+# --- Install ArgoCD CLI ---
+- name: Download ArgoCD CLI
+get url:
+url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+dest: /usr/local/bin/argocd
+mode: ’0755’
+# --- Create ArgoCD namespace and install ---
+- name: Create argocd namespace
+command: microk8s kubectl create namespace argocd --dry-run=client -o yaml |
+microk8s kubectl apply -f -
+- name: Install ArgoCD
+command: >
+microk8s kubectl apply -n argocd -f
+https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+17
+
+
+=== Page 19 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+- name: Patch ArgoCD server service to NodePort
+command: >
+microk8s kubectl patch svc argocd-server -n argocd
+-p ’ {"spec":{"type":"NodePort","ports":[]}}’
+ignore errors: yes
+- name: Print setup complete message
+debug:
+msg: "EC2 instance configured successfully with microk8s and ArgoCD!"
+5.3 Run the Ansible Playbook
+Step 5.3.1: From the project root, test Ansible can reach the server:
+ansible -i ansible/inventory.ini app servers -m ping
+Step 5.3.2: You should see: <EC2 IP> | SUCCESS => {"ping": "pong" }. If you see
+an error, wait 1 more minute and try again.
+Step 5.3.3: Run the full playbook:
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
+Step 5.3.4: Watch the output as Ansible runs each task. The entire process takes 5–10
+minutes. Green ok and yellow changed messages are normal. Red FAILED messages need
+investigation.
+When you see PLAY RECAP with 0 failures, the EC2 instance is fully configured with
+Docker, microk8s, and ArgoCD installed. Phase 4 complete.
+Step 5.3.5: SSH into the EC2 instance to verify:
+ssh -i ~/project3-key.pem ubuntu@<EC2 IP>
+Step 5.3.6: Verify microk8s is running:
+microk8s status
+microk8s kubectl get nodes
+Step 5.3.7: You should see the node listed as Ready. Type exit to go back to your
+local machine.
+18
+
+
+=== Page 20 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+PHASE 5: Kubernetes Manifests — Deployments and Services
+6 Write Kubernetes Manifests for Each Service
+NOTE
+Replace YOUR DOCKERHUB USERNAME in all manifest files below with your actual DockerHub
+username. The image tags will be updated automatically by the CI pipeline later.
+6.1 Backend Kubernetes Manifests
+Step 6.1.1: Create k8s/backend-deployment.yml:
+FILE: k8s/backend-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+name: backend
+labels:
+app: backend
+spec:
+replicas: 2
+selector:
+matchLabels:
+app: backend
+template:
+metadata:
+labels:
+app: backend
+spec:
+containers:
+- name: backend
+image: YOUR DOCKERHUB USERNAME/multi-tier-backend:latest
+ports:
+- containerPort: 3001
+env:
+- name: PORT
+value: "3001"
+resources:
+limits:
+cpu: "500m"
+memory: "256Mi"
+requests:
+cpu: "250m"
+memory: "128Mi"
+readinessProbe:
+19
+
+
+=== Page 21 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+httpGet:
+path: /api/health
+port: 3001
+initialDelaySeconds: 5
+periodSeconds: 10
+Step 6.1.2: Create k8s/backend-service.yml:
+FILE: k8s/backend-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+name: backend-service
+spec:
+selector:
+app: backend
+ports:
+- protocol: TCP
+port: 3001
+targetPort: 3001
+nodePort: 30001
+type: NodePort
+6.2 Frontend Kubernetes Manifests
+Step 6.2.1: Create k8s/frontend-deployment.yml:
+FILE: k8s/frontend-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+name: frontend
+labels:
+app: frontend
+spec:
+replicas: 2
+selector:
+matchLabels:
+app: frontend
+template:
+metadata:
+labels:
+app: frontend
+spec:
+20
+
+
+=== Page 22 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+containers:
+- name: frontend
+image: YOUR DOCKERHUB USERNAME/multi-tier-frontend:latest
+ports:
+- containerPort: 80
+resources:
+limits:
+cpu: "200m"
+memory: "128Mi"
+requests:
+cpu: "100m"
+memory: "64Mi"
+readinessProbe:
+httpGet:
+path: /
+port: 80
+initialDelaySeconds: 5
+periodSeconds: 10
+Step 6.2.2: Create k8s/frontend-service.yml:
+FILE: k8s/frontend-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+name: frontend-service
+spec:
+selector:
+app: frontend
+ports:
+- protocol: TCP
+port: 80
+targetPort: 80
+nodePort: 30080
+type: NodePort
+PHASE 6: GitHub Actions — CI Pipeline
+7 Set Up DockerHub and GitHub Secrets
+7.1 Add Secrets to GitHub Repository
+Step 7.1.1: Go to your GitHub repository: https://github.com/<YOUR-USERNAME>/multi-tier-app
+21
+
+
+=== Page 23 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 7.1.2: Click the [Click: Settings] tab (top of the repo, not your profile settings).
+Step 7.1.3: In the left sidebar, click [Click: Secrets and variables] then [Click:
+Actions].
+Step 7.1.4: Click [Click: New repository secret] . Add each of the following secrets
+one by one:
+Secret Name Value
+DOCKERHUB USERNAME Your DockerHub username
+DOCKERHUB TOKEN Your DockerHub access token (see below)
+Step 7.1.5: To get your DockerHub token: go to https://hub.docker.com. Click
+your avatar (top-right) → [Click: Account Settings] → [Click: Security] → [Click:
+New Access Token]. Description: [Type: github-actions]. Permissions: [Select:
+Read, Write, Delete] . Click [Click: Generate] . Copy the token and add it as
+DOCKERHUB TOKEN secret in GitHub.
+8 Write the GitHub Actions CI Workflow
+8.1 Create the Workflow File
+Step 8.1.1: Create .github/workflows/ci.yml:
+FILE: .github/workflows/ci.yml
+name: CI --- Build and Push Docker Images
+on:
+push:
+branches: [ "main" ]
+pull request:
+branches: [ "main" ]
+env:
+DOCKERHUB USERNAME: $ {{ secrets.DOCKERHUB USERNAME }}
+IMAGE TAG: $ {{ github.sha }}
+jobs:
+build-and-push:
+name: Build, Push and Update Manifests
+runs-on: ubuntu-latest
+steps:
+- name: Checkout repository
+uses: actions/checkout@v4
+22
+
+
+=== Page 24 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+- name: Log in to DockerHub
+uses: docker/login-action@v3
+with:
+username: $ {{ secrets.DOCKERHUB USERNAME }}
+password: $ {{ secrets.DOCKERHUB TOKEN }}
+- name: Build and push backend image
+uses: docker/build-push-action@v5
+with:
+context: ./backend
+push: true
+tags: |
+$ {{ env.DOCKERHUB USERNAME }}/multi-tier-backend:latest
+$ {{ env.DOCKERHUB USERNAME }}/multi-tier-backend:$ {{ env.IMAGE TAG }}
+- name: Build and push frontend image
+uses: docker/build-push-action@v5
+with:
+context: ./frontend
+push: true
+tags: |
+$ {{ env.DOCKERHUB USERNAME }}/multi-tier-frontend:latest
+$ {{ env.DOCKERHUB USERNAME }}/multi-tier-frontend:$ {{ env.IMAGE TAG }}
+- name: Update Kubernetes manifests with new image tags
+run: |
+# Update backend deployment image tag
+sed -i "s|multi-tier-backend:.*|multi-tier-backend: $ IMAGE TAG|"
+k8s/backend-deployment.yml
+# Update frontend deployment image tag
+sed -i "s|multi-tier-frontend:.*|multi-tier-frontend: $ IMAGE TAG|"
+k8s/frontend-deployment.yml
+- name: Commit and push updated manifests
+run: |
+git config user.name "GitHub Actions"
+git config user.email "actions@github.com"
+git add k8s/backend-deployment.yml k8s/frontend-deployment.yml
+git diff --staged --quiet || git commit -m "ci: update image tags to
+$ IMAGE TAG"
+git push
+8.2 Push All Files to GitHub and Trigger the Pipeline
+Step 8.2.1: Go back to your local terminal in the project root. Stage all files:
+git add .
+23
+
+
+=== Page 25 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 8.2.2: Commit everything:
+git commit -m "feat: initial project setup with Docker, Terraform,
+Ansible, K8s and CI"
+Step 8.2.3: Push to GitHub:
+git push origin main
+Step 8.2.4: Go to your GitHub repository in the browser. Click the [Click: Actions]
+tab. You will see a workflow run triggered. Click on it to watch the progress.
+Step 8.2.5: Wait for all steps to complete (3–5 minutes). The workflow will: checkout
+code → login to DockerHub → build & push backend image → build & push frontend
+image → update K8s manifests with the new image tag → commit updated manifests
+back to GitHub.
+When the workflow shows a green checkmark, both Docker images are on DockerHub and
+the K8s manifests have been updated with the new image tag. Phase 6 complete.
+Step 8.2.6: Verify on DockerHub: go to https://hub.docker.com and check your
+repositories. You should see multi-tier-backend and multi-tier-frontend with a latest
+tag and a commit-SHA tag.
+PHASE 7: ArgoCD — Continuous Deployment to Kubernetes
+9 Configure ArgoCD for Continuous Deployment
+9.1 Get the ArgoCD Admin Password
+Step 9.1.1: SSH into the EC2 instance:
+ssh -i ~/project3-key.pem ubuntu@<EC2 IP>
+Step 9.1.2: Wait for ArgoCD pods to be ready (may take 3–5 minutes after Ansible ran):
+microk8s kubectl get pods -n argocd
+Step 9.1.3: All pods should show Running. Get the initial ArgoCD admin password:
+24
+
+
+=== Page 26 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+microk8s kubectl -n argocd get secret argocd-initial-admin-secret -o
+jsonpath="{.data.password}" | base64 -d
+Step 9.1.4: Copy and save this password. Then get the ArgoCD NodePort:
+microk8s kubectl get svc argocd-server -n argocd
+Step 9.1.5: Note the NodePort value (e.g., 32443). Then exit back to your local
+machine.
+9.2 Patch ArgoCD to Use NodePort (If Needed)
+Step 9.2.1: If the ArgoCD server service is not already NodePort type, patch it:
+microk8s kubectl patch svc argocd-server -n argocd
+-p ’ {"spec":{"type":"NodePort"}}’
+Step 9.2.2: Re-check the NodePort:
+microk8s kubectl get svc argocd-server -n argocd
+Step 9.2.3: Note the port underPORT(S)column (e.g., 443:32443/TCP — the NodePort
+is 32443).
+9.3 Open ArgoCD in Your Browser
+Step 9.3.1: In your browser, navigate to: https://<EC2 IP>:<ARGOCD NODEPORT> (e.g.,
+https://54.123.45.67:32443). Accept the SSL certificate warning.
+Step 9.3.2: Login with:
+ Username: [Type: admin]
+ Password: the password you copied earlier
+Click [Click: SIGN IN] .
+9.4 Connect Your GitHub Repository to ArgoCD
+Step 9.4.1: In the ArgoCD UI left sidebar, click the gear/settings icon (bottom-left).
+Click [Click: Repositories] .
+Step 9.4.2: Click [Click: CONNECT REPO] (or [Click: + Connect Repo]
+button).
+25
+
+
+=== Page 27 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 9.4.3: Fill in:
+ Connection method: [Select: HTTPS]
+ Repository URL: [Type: https://github.com/<YOUR-USERNAME>/multi-tier-app.git]
+ Username: [Type: your-github-username] (if private repo, else leave blank)
+ Password: leave blank for public repo (or use a GitHub Personal Access Token for
+private)
+Click [Click: CONNECT] . Status should show Successful.
+9.5 Create the ArgoCD Application
+Step 9.5.1: Click the Applications icon in the left sidebar (top). Click [Click: NEW
+APP] (top-left).
+Step 9.5.2: Fill in the GENERAL section:
+ Application Name: [Type: multi-tier-app]
+ Project Name: [Select: default]
+ Sync Policy: [Select: Automatic]
+ Check PRUNE RESOURCES — this removes resources deleted from Git
+ Check SELF HEAL — this reverts manual cluster changes
+Step 9.5.3: Fill in the SOURCE section:
+ Repository URL: [Type: https://github.com/<YOUR-USERNAME>/multi-tier-app.git]
+ Revision: [Type: HEAD]
+ Path: [Type: k8s]
+Step 9.5.4: Fill in the DESTINATION section:
+ Cluster URL: [Select: https://kubernetes.default.svc] (in-cluster)
+ Namespace: [Type: default]
+Step 9.5.5: Click [Click: CREATE] button (top of the form). The application card
+appears in the dashboard.
+Step 9.5.6: ArgoCD immediately begins syncing. Watch the status change from OutOf-
+Sync to Synced, and from Progressing to Healthy. This takes 2–5 minutes.
+ArgoCD is now monitoring your GitHub repository. Whenever you push code, GitHub
+Actions will build new Docker images, update the K8s manifests, and ArgoCD will
+automatically deploy the updated application to the cluster. Full GitOps pipeline is live!
+PHASE 8: Verify the Full Deployment
+10 Test and Verify Everything is Working
+26
+
+
+=== Page 28 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+10.1 Verify Kubernetes Pods Are Running
+Step 10.1.1: SSH into the EC2 instance:
+ssh -i ~/project3-key.pem ubuntu@<EC2 IP>
+Step 10.1.2: Check all pods are running:
+microk8s kubectl get pods
+You should see 4 pods: 2 frontend and 2 backend, all with status Running.
+Step 10.1.3: Check services:
+microk8s kubectl get services
+You should see frontend-service (NodePort 30080) and backend-service (NodePort
+30001).
+Step 10.1.4: Check deployments:
+microk8s kubectl get deployments
+Both frontend and backend should show 2/2 READY.
+10.2 Access the Application
+Step 10.2.1: Open a browser and navigate to: http://<EC2 IP>:30080
+Step 10.2.2: You should see the Multi-Tier Application page with:
+ Title: “Multi-Tier Application”
+ Status message: “Backend is running!” (fetched from backend API)
+ A list of items: Item 1, Item 2, Item 3
+Step 10.2.3: Test the backend API directly: http://<EC2 IP>:30001/api/health
+Full pipeline verified! The app is live and accessible from the internet.
+10.3 Test the Full CI/CD Pipeline End-to-End
+Step 10.3.1: On your local machine, make a code change to test the full pipeline. Edit
+backend/server.js and change the message:
+sed -i "s/Backend is running!/Backend v2 is running!/" backend/server.js
+27
+
+
+=== Page 29 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+Step 10.3.2: Commit and push:
+git add backend/server.js
+git commit -m "feat: update backend health message to v2"
+git push origin main
+Step 10.3.3: Go to GitHub → [Click: Actions] tab. Watch the CI workflow run (3–5
+min). It will build a new Docker image and update the K8s manifest.
+Step 10.3.4: Go to ArgoCD UI. Watch the application show OutOfSync then automat-
+ically sync and redeploy.
+Step 10.3.5: After ArgoCD finishes, refresh http://<EC2 IP>:30001/api/health in
+your browser. You should see the updated message: “Backend v2 is running!”
+Complete GitOps pipeline working! Code push → CI builds Docker image →
+manifest updated → ArgoCD auto-deploys → app updated. Every step is automated.
+11 Create the README.md Documentation
+Step 11.0.1: Create README.md in the project root with documentation:
+FILE: README.md
+# Multi-Tier Application Deployment
+## Overview
+Automated deployment pipeline for a multi-tier microservices application
+using Docker, Terraform, Ansible, Kubernetes, GitHub Actions, and ArgoCD.
+## Architecture
+- Frontend: Nginx serving static HTML (NodePort 30080)
+- Backend: Node.js Express API (NodePort 30001)
+- Infrastructure: AWS EC2 (t2.medium) in custom VPC
+- Cluster: microk8s single-node Kubernetes
+- CD: ArgoCD GitOps synchronization
+## Deployment Steps
+### 1. Prerequisites
+Install: terraform, ansible, docker, aws-cli, git
+### 2. Provision Infrastructure
+cd terraform && terraform init && terraform apply
+28
+
+
+=== Page 30 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+### 3. Configure Server
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
+### 4. Configure ArgoCD
+- Get password: kubectl -n argocd get secret argocd-initial-admin-secret ...
+- Access UI: https://<EC2 IP>:<NODEPORT>
+- Create application pointing to k8s/ directory
+### 5. Trigger CI
+Push any code change to main branch to trigger GitHub Actions
+## Port Reference
+| Service | Port |
+|------------|-------|
+| Frontend | 30080 |
+| Backend API| 30001 |
+| ArgoCD | 32443 |
+## Cleanup
+cd terraform && terraform destroy
+Step 11.0.2: Commit and push the README:
+git add README.md
+git commit -m "docs: add deployment README"
+git push origin main
+12 Cleanup (After Grading)
+IMPOR T ANT
+Only run cleanup AFTER your project has been graded. terraform destroy will
+permanently delete the EC2 instance and all AWS resources.
+Step 12.0.1: From your local machine in the terraform directory:
+cd terraform
+terraform destroy
+Step 12.0.2: When prompted Do you really want to destroy? type [Type: yes]
+and press Enter. Wait 1–2 minutes. All AWS resources (EC2, VPC, Security Group, etc.)
+are deleted.
+29
+
+
+=== Page 31 ===
+
+Project 3: Automated Multi-Tier Deployment Docker· T erraform· Ansible · K8s · ArgoCD
+13 Complete File Reference
+File Purpose
+backend/server.js Node.js Express API
+backend/package.json Node.js dependencies
+backend/Dockerfile Containerize backend (node:18-alpine)
+frontend/src/index.html React/HTML frontend
+frontend/nginx.conf Nginx server config
+frontend/Dockerfile Containerize frontend (nginx:alpine)
+terraform/main.tf VPC, Subnet, SG, EC2 resources
+terraform/variables.tf Region, AMI, instance type vars
+terraform/outputs.tf Print EC2 public IP after apply
+ansible/inventory.ini Target server IP and SSH config
+ansible/playbook.yml Install Docker, microk8s, ArgoCD
+k8s/backend-deployment.yml K8s Deployment for backend (2 replicas)
+k8s/backend-service.yml NodePort Service for backend (30001)
+k8s/frontend-deployment.yml K8s Deployment for frontend (2 replicas)
+k8s/frontend-service.yml NodePort Service for frontend (30080)
+.github/workflows/ci.yml CI: build, push, update manifests
+README.md Project documentation
+13.1 Values Tracker
+Item Your Value
+AWS Region
+EC2 Public IP (from Ter-
+raform)
+DockerHub Username
+GitHub Repository URL
+ArgoCD NodePort
+ArgoCD Admin Password
+Project 3 Complete!
+Code Push → GitHub Actions CI → Docker Build → DockerHub →
+Manifest Update → ArgoCD GitOps → microk8s Deploy → App Live
+on EC2
+30
+
