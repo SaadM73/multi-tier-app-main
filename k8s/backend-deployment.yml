@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: msaadm73/multi-tier-backend:1741eac88c0288fb35780b792093541ce81cb4ba
+          image: msaadm73/multi-tier-backend:bf283b9d14a4620468c2c3a482486183376fd478
           ports:
             - containerPort: 3001
           env:
